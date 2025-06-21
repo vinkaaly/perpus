@@ -16,36 +16,56 @@ export default function KatalogBuku() {
   }, []);
 
   const handlePinjam = async (book) => {
-    const username = localStorage.getItem("username");
-    if (!username) {
-      alert("Silakan login sebagai mahasiswa terlebih dahulu.");
-      return;
-    }
+  const username = localStorage.getItem("username");
+  if (!username) {
+    alert("Silakan login sebagai mahasiswa terlebih dahulu.");
+    return;
+  }
 
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("username", username)
-      .single();
+  const { data: userData, error: userError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("username", username)
+    .single();
 
-    if (userError) {
-      console.error("User tidak ditemukan", userError);
-      return;
-    }
+  if (userError || !userData) {
+    console.error("User tidak ditemukan", userError);
+    return;
+  }
 
-    const { error: pinjamError } = await supabase.from("peminjaman").insert({
-      user_id: userData.id,
-      buku_id: book.id,
-      status: "pending", // atau "diproses"
-      tanggal_pinjam: new Date().toISOString(),
-    });
+  // ✅ Cek apakah buku sudah pernah dipinjam dan belum dikembalikan
+  const { data: existing, error: checkError } = await supabase
+    .from("peminjaman")
+    .select("*")
+    .eq("user_id", userData.id)
+    .eq("buku_id", book.id)
+    .in("status", ["pending", "diproses"]);
 
-    if (pinjamError) {
-      alert("Gagal meminjam buku: " + pinjamError.message);
-    } else {
-      alert(`Buku "${book.title}" berhasil dimasukkan ke daftar peminjaman.`);
-    }
-  };
+  if (checkError) {
+    alert("Gagal memeriksa status peminjaman.");
+    return;
+  }
+
+  if (existing && existing.length > 0) {
+    alert(`Buku "${book.title}" sudah ada di daftar peminjaman kamu.`);
+    return;
+  }
+
+  // ✅ Jika belum pernah dipinjam atau sudah dikembalikan
+  const { error: pinjamError } = await supabase.from("peminjaman").insert({
+    user_id: userData.id,
+    buku_id: book.id,
+    status: "pending",
+    tanggal_pinjam: new Date().toISOString(),
+  });
+
+  if (pinjamError) {
+    alert("Gagal meminjam buku: " + pinjamError.message);
+  } else {
+    alert(`Buku "${book.title}" berhasil dimasukkan ke daftar peminjaman.`);
+  }
+};
+
 
   const filteredBooks = books.filter(
     (book) =>

@@ -27,8 +27,12 @@ export default function Navbar() {
   if (["/login"].includes(pathname)) return null;
 
   const commonItems = role
-    ? [{ label: 'Dashboard', href: `/dashboard/${role}` }, { label: 'Katalog', href: '/katalog' }]
-    : [{ label: 'Beranda', href: '/' }, { label: 'Katalog', href: '/katalog' }]
+  ? [{ label: 'Dashboard', href: `/dashboard/${role}` }, { label: 'Katalog', href: '/katalog' }]
+  : [
+      { label: 'Beranda', href: '/' },
+      { label: 'Katalog', href: '/katalog' },
+      { label: 'Contact', href: '/contact' }, // ✅ Tambahkan menu Contact
+    ]
 
   const adminItems = [
     { label: 'Edit Buku', href: '/dashboard/admin/buku' },

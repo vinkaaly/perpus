@@ -14,7 +14,6 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Jika sudah login, langsung redirect ke dashboard
   useEffect(() => {
     const role = localStorage.getItem("role");
     if (role === "admin") router.push("/dashboard/admin");
@@ -27,7 +26,6 @@ export default function LoginPage() {
     setSuccess("");
     setLoading(true);
 
-    // Hardcoded admin
     if (username === "admin" && password === "123") {
       localStorage.setItem("role", "admin");
       localStorage.setItem("username", "admin");
@@ -35,10 +33,9 @@ export default function LoginPage() {
       setTimeout(() => {
         router.push("/dashboard/admin");
       }, 1500);
-      return false; // Hentikan eksekusi
+      return false;
     }
 
-    // Login dari tabel Supabase
     const { data, error: fetchError } = await supabase
       .from("users")
       .select("*")
@@ -58,10 +55,9 @@ export default function LoginPage() {
       return;
     }
 
-    // Simpan data ke localStorage
     localStorage.setItem("role", data.role);
     localStorage.setItem("username", data.username);
-    localStorage.setItem("user_id", data.id); // user_id penting untuk dashboard
+    localStorage.setItem("user_id", data.id);
 
     setSuccess(`Login sebagai ${data.role} berhasil...`);
     setTimeout(() => {
@@ -77,9 +73,14 @@ export default function LoginPage() {
           onSubmit={handleLogin}
           className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm"
         >
-          <h2 className="text-3xl font-bold mb-6 text-center text-blue-600">
+          <h2 className="text-3xl font-bold mb-3 text-center text-blue-600">
             Login
           </h2>
+
+          {/* 🔔 Tambahkan keterangan akun admin di sini */}
+          <p className="text-sm text-gray-500 text-center mb-4">
+            Untuk login sebagai admin, gunakan <strong>Username: admin</strong> dan <strong>Password: 123</strong>
+          </p>
 
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-600 px-4 py-2 rounded mb-4 text-sm">
